@@ -2,6 +2,7 @@
  * @source https://github.com/qt/qtwebchannel/blob/5.12/examples/webchannel/shared/qwebchannel.js
  */
 
+/// <reference path="./qwebchannel.d.ts"/>
 /* eslint-disable no-console */
 
 /****************************************************************************

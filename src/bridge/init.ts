@@ -8,7 +8,8 @@ declare global {
   interface Window {
     qt: {
       webChannelTransport: {
-        send: (payload: any) => any
+        send: (payload: any) => void
+        onmessage: (payload: any) => void
       }
     }
   }
@@ -46,7 +47,8 @@ export default {
             console.info(`
               QWebChannel simulator activated !
             `)
-          }
+          },
+          onmessage() {}
         }
       }
     }
