@@ -2,6 +2,8 @@
 
 This project is used to describe how to integrate `QWebChannel` with `Vue plugin`.
 
+[中文指南](https://set.sh/post/190728-intergrate-qwebchannel)
+
 ## Prerequisites
 
 `Qt` side should provide a Object named `context` which include all information shared with `JS` side.
@@ -48,4 +50,4 @@ Once `QWebChannel` initialized, `dispatch` will be invoked when `Cpp` function n
 
 1. In `Qt` side, all entry point should be based on root path - `https://<YOUR_HOST>/`. All navigation will be distributed by `JS` side (`vue-router`, a kind of front-end router) rather than `Qt`, `Qt` side would has more opportunities to focus on other bussiness logic.
 
-1. Be careful any external link and redirect uri from any external web site like `Alipay` online payment links. If you want to respect any redirect uri and prevent navigation from above `dispatch` function, you **MUST** provide **non-root** redirect uri (eg. `https://<YOUR_HOST>/#/I_AM_REDIRECT_FROM_OHTER_SITE`). You can find more details from [here](./src/bridge/index.ts#L19-L21).
+1. Be careful any external link and redirect uri from any external web site like `Alipay` online payment links. If you want to respect any redirect uri and prevent navigation from above `dispatch` function, you **MUST** provide **non-root** redirect uri (eg. `https://<YOUR_HOST>/#/I_AM_REDIRECTED_FROM_OHTER_SITE`). You can find more details from [here](./src/bridge/index.ts#L19-L21).
