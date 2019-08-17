@@ -32,6 +32,7 @@ This project is used to describe how to integrate `QWebChannel` with `Vue plugin
      const published = channel.objects.context
      Vue.prototype.$_bridge = published
 
+     // This function calling will notify Qt server asynchronously
      published.emitEmbeddedPageLoad('', function(payload: string) {
        dispatch(payload)
        console.info(`
@@ -41,7 +42,7 @@ This project is used to describe how to integrate `QWebChannel` with `Vue plugin
    })
    ```
 
-Once `QWebChannel` initialized, `dispatch` will be invoked when `Cpp` function named `emitEmbeddedPageLoad` return a value. `dispatch` function would play a **navigator** role in `JS` side.
+Once `QWebChannel` initialized, `dispatch` will be invoked when `Cpp` function named `emitEmbeddedPageLoad` return a value ([async notification](https://doc.qt.io/qt-5/qtwebchannel-javascript.html#interacting-with-qobjects)). `dispatch` function would play a **navigator** role in `JS` side.
 
 ## Usage
 
