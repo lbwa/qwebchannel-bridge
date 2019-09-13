@@ -11,10 +11,13 @@ interface WebChannelTransport {
   onmessage: (payload: { [key: string]: any }) => void
 }
 
+// Map every properties in single Qt side QObject
+export interface PublishedObject {
+  [prop: string]: any
+}
+
 interface PublishedObjects {
-  [key: string]: {
-    [qtContext: string]: any
-  }
+  [scope: string]: PublishedObject
 }
 
 interface InitCallback {
