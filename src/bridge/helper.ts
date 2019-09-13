@@ -23,7 +23,13 @@ export function dispatch(payload: string) {
 }
 
 export function createPusher(QObject: PublishedObject) {
-  return function pusher({ action = '', payload = '' } = {}) {
+  return function pusher({
+    action,
+    payload = ''
+  }: {
+    action: keyof typeof PUSHER_MAP
+    payload: any
+  }) {
     return new Promise((resolve, reject) => {
       if (!Object.keys(QObject).includes(action))
         return reject(new Error('[PUSHER]: Unknown action name !'))
@@ -39,5 +45,14 @@ export function createPusher(QObject: PublishedObject) {
 
       QObject[PUSHER_MAP[action]](payload, resolve)
     })
+  }
+}
+
+export function createProp(QObject: PublishedObject) {
+  return function prop(keyInScope: string) {
+    if (typeof QObject[keyInScope] === 'function') {
+      throw new Error(`[PROP]: ${keyInScope} is not a property from Qt.`)
+    }
+    return QObject[keyInScope]
   }
 }

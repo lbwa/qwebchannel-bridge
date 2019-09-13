@@ -2,7 +2,7 @@
 import Vue from 'vue'
 import QWebChannel from './qwebchannel'
 import { assert, isQtClient, log } from '@/_utils'
-import { dispatch, createPusher } from './helper'
+import { dispatch, createPusher, createProp } from './helper'
 import { SCOPES } from '@/config/bridge'
 
 declare global {
@@ -23,17 +23,20 @@ declare global {
 declare module 'vue/types/vue' {
   interface Vue {
     prototype: {
-      $$pusher: PusherMap
+      $$pushers: PushersMap
+      $$props: QtPropsMap
     }
   }
 }
 
 // https://stackoverflow.com/questions/47181789/limit-object-properties-to-keyof-interface
 // https://www.typescriptlang.org/docs/handbook/advanced-types.html#mapped-types
-// Same as Record<K, T>
-type PusherMap = {
+// Same as Record<SCOPES, ReturnType<typeof createPusher>>
+type PushersMap = {
   [scope in SCOPES]: ReturnType<typeof createPusher>
 }
+
+type QtPropsMap = Record<SCOPES, any>
 
 const __DEV__ = process.env.NODE_ENV === 'development'
 
@@ -60,18 +63,33 @@ export default {
       // NOTICE: all communication is under a scope(QObject) named 'context' mapped by Qt side
       // You can also create your own single or multiple scope(QObject)
       const scopes = Object.keys(SCOPES) as SCOPES[]
-      const pusherMap = scopes.reduce(
+      const propsMap = {} as QtPropsMap
+      const pushersMap = scopes.reduce(
         (map, scope) => {
           map[scope] = createPusher(channel.objects[SCOPES[scope]])
+          propsMap[scope] = createProp(channel.objects[SCOPES[scope]])
           return map
         },
-        {} as PusherMap
+        {} as PushersMap
       )
-      Vue.prototype.$$pusher = pusherMap
 
-      pusherMap
+      /**
+       * @usage
+       * Call Cpp method in Vue instance:
+       * this.$$pusher.yourOwnScope({
+       *    action: 'METHOD_NAME_FROM_CPP',
+       *    payload: 'CALLING_PAYLOAD'
+       * })
+       *
+       * get Cpp properties in Vue instance:
+       * this.$$prop.yourOwnScope.propFromCpp
+       */
+      Vue.prototype.$$pushers = pushersMap
+      Vue.prototype.$$props = propsMap
+
+      pushersMap
         .context({
-          action: 'emitEmbeddedPageLoad',
+          action: 'initialized',
           payload: ''
         })
         .then(res => {

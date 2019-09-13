@@ -11,12 +11,10 @@ This project is used to describe how to integrate `QWebChannel` with `Vue plugin
 1. A `Cpp` function named `emitEmbeddedPageLoad`
 
    ```cpp
-   class WebBridge: public QOject
-   {
+   class WebBridge: public QObject {
      Q_OBJECT
      public slots:
-     void emitEmbeddedPageLoad()
-     {
+     void emitEmbeddedPageLoad() {
          QMessageBox::information(NULL,"emitEmbeddedPageLoad","I'm called by client JS!");
      }
    };
@@ -43,6 +41,8 @@ This project is used to describe how to integrate `QWebChannel` with `Vue plugin
      })
    })
    ```
+
+   **Advance**: You can also create a process like [this](./src/bridge/index.ts#L62-L99) for function calling or properties reading.
 
 Once `QWebChannel` initialized, `dispatch` will be invoked when `Cpp` function named `emitEmbeddedPageLoad` return a value ([async notification](https://doc.qt.io/qt-5/qtwebchannel-javascript.html#interacting-with-qobjects)). `dispatch` function would play a **navigator** role in `JS` side.
 

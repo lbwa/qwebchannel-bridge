@@ -9,7 +9,7 @@ export const RECEIVER_MAP: { [key: string]: (payload: any) => any } = {
   }
 }
 
-export const PUSHER_MAP: { [key: string]: string } = {
+export const PUSHER_MAP = {
   initialized: 'emitEmbeddedPageLoad'
 }
 
