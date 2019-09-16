@@ -31,7 +31,7 @@ export function createPusher(QObject: PublishedObject) {
     payload: any
   }) {
     return new Promise((resolve, reject) => {
-      if (!Object.keys(QObject).includes(action))
+      if (!Object.keys(QObject).includes(PUSHER_MAP[action]))
         return reject(new Error('[PUSHER]: Unknown action name !'))
       if (typeof QObject[PUSHER_MAP[action]] !== 'function') {
         return reject(
