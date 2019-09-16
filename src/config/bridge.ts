@@ -9,6 +9,7 @@ export const RECEIVER_MAP: { [key: string]: (payload: any) => any } = {
   }
 }
 
+// NOTICE: This map is shared by all QObject scope
 export const PUSHER_MAP = {
   initialized: 'emitEmbeddedPageLoad'
 }
