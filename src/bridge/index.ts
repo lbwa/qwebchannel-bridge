@@ -59,9 +59,10 @@ export default {
         }
       }
     }
+
     new QWebChannel(window.qt.webChannelTransport, function(channel) {
-      // NOTICE: all communication is under a scope(QObject) named 'context' mapped by Qt side
-      // You can also create your own single or multiple scope(QObject)
+      // NOTICE: all communication is under scope(QObject) mapping from Qt side
+      // You can also create your own single or multiple scope(QObject) which is similar with following logic.
       const scopes = Object.keys(SCOPES) as SCOPES[]
       const propsMap = {} as QtPropsMap
       const pushersMap = scopes.reduce(

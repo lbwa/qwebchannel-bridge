@@ -17,7 +17,7 @@ export const PUSHER_MAP = {
 // key: js side name
 // value: Qt side name
 export const SCOPES = {
-  context: 'CONTEXT',
+  context: 'keyNamedContext',
   yourOwnScope: 'YOUR_OWN_SCOPE'
 }
 
