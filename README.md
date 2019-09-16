@@ -6,7 +6,7 @@ This project is used to describe how to integrate `QWebChannel` with `Vue plugin
 
 ## Prerequisites
 
-`Qt` side should provide a Object named `context` which include all information shared with `JS` side.
+`Qt` side should provide one or more `QObject` which include all information shared with `JS` side.
 
 1. A `Cpp` function named `emitEmbeddedPageLoad`
 
@@ -21,7 +21,7 @@ This project is used to describe how to integrate `QWebChannel` with `Vue plugin
 
    WebBridge *webBridge = new WebBridge();
    QWebChannel *channel = new QWebChannel(this);
-   channel->registerObject('context', webBridge);
+   channel->registerObject('keyNamedContext', webBridge);
    view->page()->setWebChannel(channel);
    ```
 
@@ -29,11 +29,12 @@ This project is used to describe how to integrate `QWebChannel` with `Vue plugin
 
    ```ts
    new QWebChannel(window.qt.webChannelTransport, function(channel) {
-     const published = channel.objects.context
+     const published = channel.objects.keyNamedContext
      Vue.prototype.$_bridge = published
 
      // This function calling will notify Qt server asynchronously
      published.emitEmbeddedPageLoad('', function(payload: string) {
+       // This payload has included receiver name and its parameters.
        dispatch(payload)
        console.info(`
            Bridge load !
@@ -42,12 +43,52 @@ This project is used to describe how to integrate `QWebChannel` with `Vue plugin
    })
    ```
 
-   **Advance**: You can also create a process like [this](./src/bridge/index.ts#L62-L99) for function calling or properties reading.
+   **Advance**: You can also create a process like [these implementation](./src/bridge/index.ts#L62-L99) for function calling or properties reading with abstract `scope`.
 
-Once `QWebChannel` initialized, `dispatch` will be invoked when `Cpp` function named `emitEmbeddedPageLoad` return a value ([async notification](https://doc.qt.io/qt-5/qtwebchannel-javascript.html#interacting-with-qobjects)). `dispatch` function would play a **navigator** role in `JS` side.
+1. `dispatch` function should include all navigation logic.
+
+Once `QWebChannel` initialized, `dispatch` will be invoked when `Cpp` function named `emitEmbeddedPageLoad` return a value <sup>[async notification](https://doc.qt.io/qt-5/qtwebchannel-javascript.html#interacting-with-qobjects)</sup>. `dispatch` function would play a **navigator** role in `JS` side.
 
 ## Usage
 
-1. In `Qt` side, all entry point should be based on root path - `https://<YOUR_HOST>/`. All navigation will be distributed by `JS` side (`vue-router`, a kind of front-end router) rather than `Qt`, `Qt` side would has more opportunities to focus on other bussiness logic.
+1. In `Qt` side, all entry point should be based on **root** path - `https://<YOUR_HOST>/`. All navigation will be distributed by `JS` side (`vue-router`, a kind of front-end router) rather than `Qt`. `Qt` side would has more opportunities to focus on other bussiness logic.
 
-1. Be careful any external link and redirect uri from any external web site like `Alipay` online payment links. If you want to respect any redirect uri and prevent navigation from above `dispatch` function, you **MUST** provide **non-root** redirect uri (eg. `https://<YOUR_HOST>/#/I_AM_REDIRECTED_FROM_OHTER_SITE`). You can find more details from [here](./src/bridge/index.ts#L19-L21).
+   - When `Qt` side receives a initial message from `JS` side, it should return a value which syntax should be like:
+
+     ```ts
+     interface InitialProps {
+       type: string
+       payload: any
+     }
+     ```
+
+     ```ts
+     // Actual value
+     {
+       type: [JS_SIDE_RECEIVER_NAME],
+       payload: [OPTIONAL_PAYLOAD]
+     }
+     ```
+
+   `type` property will be used to invoke `receiver` in the [RECEIVER_MAP](./src/config/bridge.ts#L3), then `payload` property including any messages from `Qt` side will passed `receiver`. `receiver` in the [RECEIVER_MAP](./src/config/bridge.ts#L3) plays a `navigator` role in front-end, and developer should add navigation logic into here. This is all secrets about front-end navigation without `Qt` routing.
+
+   Above all process has described how to initialize `Vue.js` app in the `QWebEngine`, and how navigation works in the `Vue.js` with `QWebEngine`.
+
+1. If you want to push messages from `JS` side to `Qt` side, you can invoke the mapping of `Qt` methods in `JS` side directly:
+
+   ```ts
+   channel.object[QT_SCOPE].methodFromCpp(payload, callback)
+   ```
+
+   Enhance: the following logic is based on [these implementation](./src/bridge/index.ts#L63-L101):
+
+   ```ts
+   // with abstract scope named `scopeMapping` in Qt/JS side
+   // in the vue instance
+   this.$$pusher.scopeMapping({
+     action: 'METHODS_MAPPING_IN_THE_SCOPE',
+     payload: 'CALLING_PAYLOAD'
+   })
+   ```
+
+1. Be careful any external link and redirect uri from any external web site like `Alipay` online payment links. If you want to respect any redirect uri and prevent navigation from above `dispatch` function, you **MUST** provide **non-root** redirect uri (eg. `https://<YOUR_HOST>/#/I_AM_REDIRECTED_FROM_OHTER_SITE`). You can find more details from [here](./src/bridge/helper.ts#L12-L22).
