@@ -14,7 +14,7 @@ export function dispatch(payload: string) {
    * This 'if' expression is used to prevent any unexpected redirect uri
    * override from any external web site.
    * Because JS will always communicate with Cpp server in 'index.ts' when page
-   * loaded, and Cpp will always will invoke initCallback, means 'dispatch'
+   * loaded, and Cpp will always invoke initCallback, it means 'dispatch'
    * function will always be invoked.
    */
   if (/.+\/#\/$/.test(location.href)) {
