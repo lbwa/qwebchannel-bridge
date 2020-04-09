@@ -1,9 +1,19 @@
-import { RECEIVER_MAP, PUSHER_MAP } from '@/config/bridge'
+import {
+  RECEIVER_MAP,
+  PUSHER_MAP,
+  SignalName,
+  SIGNAL_CALLBACKS
+} from '@/config/bridge'
 import { PublishedObject } from './qwebchannel'
 
 interface DispatchPayload {
   type: string
   [otherKey: string]: any
+}
+
+interface SignalHandler {
+  connect: Function
+  disconnect: Function
 }
 
 export function dispatch(payload: string) {
@@ -55,4 +65,20 @@ export function createProp(QObject: PublishedObject) {
     }
     return QObject[keyInScope]
   }
+}
+
+export function registerSignalListener(currentScope: PublishedObject) {
+  // We setup all available listeners for signals defined by Qt side
+  // To be notice, signal also belongs to particular QObject
+  ;(Object.keys(SIGNAL_CALLBACKS) as SignalName[]).forEach(signalName => {
+    const signal = currentScope[signalName] as SignalHandler
+    // setup particular QObject signal listeners if signal defined
+    if (
+      signal &&
+      typeof signal.connect === 'function' &&
+      typeof SIGNAL_CALLBACKS[signalName] === 'function'
+    ) {
+      return signal.connect(SIGNAL_CALLBACKS[signalName])
+    }
+  })
 }

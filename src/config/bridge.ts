@@ -9,17 +9,30 @@ export const RECEIVER_MAP: { [key: string]: (payload: any) => any } = {
   }
 }
 
-// NOTICE: This map is shared by all QObject scope
+// We use only one object to store all pusher mapping from different QObject.
+// interface PUSHER_MAP {
+//   [jsSideName: string]: qtSideName
+// }
 export const PUSHER_MAP = {
   initialized: 'emitEmbeddedPageLoad'
 }
 
-// Mapping QObject name
-// key: js side name
-// value: Qt side name
+// Map QObject name to JS side
+// {
+//    [jsSideName: string]: qtSideName
+// }
 export const SCOPES = {
   context: 'keyNamedContext',
   yourOwnScope: 'YOUR_OWN_SCOPE'
 }
 
-export type SCOPES = keyof typeof SCOPES
+export type ScopeName = keyof typeof SCOPES
+
+// We use only one object to store all signal callbacks from different QObject.
+export const SIGNAL_CALLBACKS = {
+  signalMessageFromQt(val: any) {
+    // signal callback
+  }
+}
+
+export type SignalName = keyof typeof SIGNAL_CALLBACKS

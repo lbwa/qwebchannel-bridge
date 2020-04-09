@@ -14,9 +14,9 @@ This project is used to describe how to integrate `QWebChannel` with `Vue plugin
    class WebBridge: public QObject {
      Q_OBJECT
      public slots:
-     void emitEmbeddedPageLoad() {
-         QMessageBox::information(NULL,"emitEmbeddedPageLoad","I'm called by client JS!");
-     }
+       void emitEmbeddedPageLoad() {
+           QMessageBox::information(NULL,"emitEmbeddedPageLoad","I'm called by client JS!");
+       }
    };
 
    WebBridge *webBridge = new WebBridge();
@@ -49,9 +49,9 @@ This project is used to describe how to integrate `QWebChannel` with `Vue plugin
 
 Once `QWebChannel` initialized, `dispatch` will be invoked when `Cpp` function named `emitEmbeddedPageLoad` return a value <sup>[async notification](https://doc.qt.io/qt-5/qtwebchannel-javascript.html#interacting-with-qobjects)</sup>. `dispatch` function would play a **navigator** role in `JS` side.
 
-## Usage
+## How to navigate
 
-1. In `Qt` side, all entry point should be based on **root** path - `https://<YOUR_HOST>/`. All navigation will be distributed by `JS` side (`vue-router`, a kind of front-end router) rather than `Qt`. `Qt` side would has more opportunities to focus on other bussiness logic.
+1. In `Qt` side, all entry point should be based on **root** path - `https://<YOUR_HOST>/`. All navigation will be distributed by `JS` side (`vue-router`, a kind of front-end router) rather than `Qt`. `Qt` side would has more opportunities to focus on other business logic.
 
    - When `Qt` side receives a initial message from `JS` side, it should return a value which syntax should be like:
 
@@ -74,21 +74,47 @@ Once `QWebChannel` initialized, `dispatch` will be invoked when `Cpp` function n
 
    Above all process has described how to initialize `Vue.js` app in the `QWebEngine`, and how navigation works in the `Vue.js` with `QWebEngine`.
 
-1. If you want to push messages from `JS` side to `Qt` side, you can invoke the mapping of `Qt` methods in `JS` side directly:
-
-   ```ts
-   channel.object[QT_SCOPE].methodFromCpp(payload, callback)
-   ```
-
-   Enhance: the following logic is based on [these implementation](./src/bridge/index.ts#L63-L101):
-
-   ```ts
-   // with abstract scope named `scopeMapping` in Qt/JS side
-   // in the vue instance
-   this.$$pusher.scopeMapping({
-     action: 'METHODS_MAPPING_IN_THE_SCOPE',
-     payload: 'CALLING_PAYLOAD'
-   })
-   ```
-
 1. Be careful any external link and redirect uri from any external web site like `Alipay` online payment links. If you want to respect any redirect uri and prevent navigation from above `dispatch` function, you **MUST** provide **non-root** redirect uri (eg. `https://<YOUR_HOST>/#/I_AM_REDIRECTED_FROM_OHTER_SITE`). You can find more details from [here](./src/bridge/helper.ts#L12-L22).
+
+## How to push message from JS side
+
+If you want to push messages from `JS` side to `Qt` side, you can invoke the mapping of `Qt` methods in `JS` side directly:
+
+```ts
+channel.object[QT_SCOPE].methodFromCpp(payload, callback)
+```
+
+Enhance: the following logic is based on [these implementation](./src/bridge/helper.ts#L35-L59):
+
+```ts
+// with abstract scope named `scopeMapping` in Qt/JS side
+// in the vue instance
+this.$$pusher.scopeMapping({
+  action: 'METHODS_MAPPING_IN_THE_SCOPE',
+  payload: 'CALLING_PAYLOAD'
+})
+```
+
+## How to push message from Qt side
+
+[Qt signal listener mechanism](https://doc.qt.io/qt-5/qtwebchannel-javascript.html#overloaded-methods-and-signals) is a kind of good solution for communicate from Qt side to JS side. You may be wondering why we don't use signal mechanism directly to handle first frontend navigation? Because Qt side never known when frontend router is available until JS side push `loaded` message to Qt side positively.
+
+```cpp
+class WebBridge: public QObject {
+  Q_OBJECT
+  public slots:
+    void emitEmbeddedPageLoad();
+
+  // define your own signal
+  signals:
+    void signalMessageFromQt(const QString &str);
+};
+```
+
+Always define all available signal listeners in [config/bridge.ts](./src/config/bridge.ts#L27), and all signal would be handled automatically by [these codes](./src/bridge/helper.ts#L70-L84):
+
+```ts
+interface SignalCallbacks {
+  [targetSignal: string]: Function
+}
+```

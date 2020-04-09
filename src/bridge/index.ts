@@ -2,8 +2,18 @@
 import Vue from 'vue'
 import QWebChannel from './qwebchannel'
 import { assert, isQtClient, log } from '@/_utils'
-import { dispatch, createPusher, createProp } from './helper'
-import { SCOPES } from '@/config/bridge'
+import {
+  dispatch,
+  createPusher,
+  createProp,
+  registerSignalListener
+} from './helper'
+import {
+  SCOPES,
+  ScopeName,
+  SIGNAL_CALLBACKS,
+  SignalName
+} from '@/config/bridge'
 
 declare global {
   interface Window {
@@ -33,10 +43,10 @@ declare module 'vue/types/vue' {
 // https://www.typescriptlang.org/docs/handbook/advanced-types.html#mapped-types
 // Same as Record<SCOPES, ReturnType<typeof createPusher>>
 type PushersMap = {
-  [scope in SCOPES]: ReturnType<typeof createPusher>
+  [name in ScopeName]: ReturnType<typeof createPusher>
 }
 
-type QtPropsMap = Record<SCOPES, any>
+type QtPropsMap = Record<ScopeName, any>
 
 const __DEV__ = process.env.NODE_ENV === 'development'
 
@@ -63,16 +73,16 @@ export default {
     new QWebChannel(window.qt.webChannelTransport, function(channel) {
       // NOTICE: all communication is under scope(QObject) mapping from Qt side
       // You can also create your own single or multiple scope(QObject) which is similar with following logic.
-      const scopes = Object.keys(SCOPES) as SCOPES[]
+      const scopeNames = Object.keys(SCOPES) as ScopeName[]
       const propsMap = {} as QtPropsMap
-      const pushersMap = scopes.reduce(
-        (map, scope) => {
-          map[scope] = createPusher(channel.objects[SCOPES[scope]])
-          propsMap[scope] = createProp(channel.objects[SCOPES[scope]])
-          return map
-        },
-        {} as PushersMap
-      )
+      const pushersMap = {} as PushersMap
+
+      scopeNames.forEach(scopeName => {
+        const currentScope = channel.objects[SCOPES[scopeName]]
+        pushersMap[scopeName] = createPusher(currentScope)
+        propsMap[scopeName] = createProp(currentScope)
+        registerSignalListener(currentScope)
+      })
 
       /**
        * @usage
@@ -88,6 +98,11 @@ export default {
       Vue.prototype.$$pushers = pushersMap
       Vue.prototype.$$props = propsMap
 
+      // First frontend navigation
+      // Why not use signal listener directly?
+      // 1. Qt side never known when frontend router is available until JS side
+      // push `loaded` message to Qt side positively.
+      // 2. This callback alway be called after router initialization
       pushersMap
         .context({
           action: 'initialized',
