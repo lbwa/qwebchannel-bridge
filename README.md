@@ -43,7 +43,7 @@ This project is used to describe how to integrate `QWebChannel` with `Vue plugin
    })
    ```
 
-   **Advance**: You can also create a process like [these implementation](./src/bridge/index.ts#L62-L99) for function calling or properties reading with abstract `scope`.
+   **Advance**: You can also create a process like [these implementation](./src/bridge/index.ts#L73-L106) for function calling or properties reading with abstract `scope`.
 
 1. `dispatch` function should include all navigation logic.
 
@@ -74,7 +74,7 @@ Once `QWebChannel` initialized, `dispatch` will be invoked when `Cpp` function n
 
    Above all process has described how to initialize `Vue.js` app in the `QWebEngine`, and how navigation works in the `Vue.js` with `QWebEngine`.
 
-1. Be careful any external link and redirect uri from any external web site like `Alipay` online payment links. If you want to respect any redirect uri and prevent navigation from above `dispatch` function, you **MUST** provide **non-root** redirect uri (eg. `https://<YOUR_HOST>/#/I_AM_REDIRECTED_FROM_OHTER_SITE`). You can find more details from [here](./src/bridge/helper.ts#L12-L22).
+1. Be careful any external link and redirect uri from any external web site like `Alipay` online payment links. If you want to respect any redirect uri and prevent navigation from above `dispatch` function, you **MUST** provide **non-root** redirect uri (eg. `https://<YOUR_HOST>/#/I_AM_REDIRECTED_FROM_OHTER_SITE`). You can find more details from [here](./src/bridge/helper.ts#L30-L32).
 
 ## How to push message from JS side
 
@@ -111,10 +111,12 @@ class WebBridge: public QObject {
 };
 ```
 
-Always define all available signal listeners in [config/bridge.ts](./src/config/bridge.ts#L27), and all signal would be handled automatically by [these codes](./src/bridge/helper.ts#L70-L84):
+Always define all available signal listeners in [config/bridge.ts](./src/config/bridge.ts#L32-L36):
 
 ```ts
 interface SignalCallbacks {
   [targetSignal: string]: Function
 }
 ```
+
+All signal would be handled automatically by [these codes](./src/bridge/helper.ts#L70-L84).
