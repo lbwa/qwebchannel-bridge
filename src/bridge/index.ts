@@ -1,7 +1,7 @@
 /* eslint-disable no-console */
 import Vue from 'vue'
 import QWebChannel from './qwebchannel'
-import { assert, isQtClient, log } from '@/_utils'
+import { assert, isQtClient, log } from '@/shared/utils'
 import {
   dispatch,
   createPusher,
