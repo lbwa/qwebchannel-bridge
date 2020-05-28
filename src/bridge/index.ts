@@ -8,7 +8,7 @@ import {
   createProp,
   registerSignalListener
 } from './helper'
-import { SCOPES, ScopeName } from '@/config/bridge'
+import { QObjectMap, QObjectJSKeys } from '@/config/bridge'
 
 declare global {
   interface Window {
@@ -36,12 +36,11 @@ declare module 'vue/types/vue' {
 
 // https://stackoverflow.com/questions/47181789/limit-object-properties-to-keyof-interface
 // https://www.typescriptlang.org/docs/handbook/advanced-types.html#mapped-types
-// Same as Record<SCOPES, ReturnType<typeof createPusher>>
 type PushersMap = {
-  [name in ScopeName]: ReturnType<typeof createPusher>
+  [name in QObjectJSKeys]: ReturnType<typeof createPusher>
 }
 
-type QtPropsMap = Record<ScopeName, any>
+type QtPropsMap = Record<QObjectJSKeys, any>
 
 const __DEV__ = process.env.NODE_ENV === 'development'
 
@@ -68,12 +67,10 @@ export default {
     new QWebChannel(window.qt.webChannelTransport, function(channel) {
       // NOTICE: all communication is under scope(QObject) mapping from Qt side
       // You can also create your own single or multiple scope(QObject) which is similar with following logic.
-      const scopeNames = Object.keys(SCOPES) as ScopeName[]
       const propsMap = {} as QtPropsMap
       const pushersMap = {} as PushersMap
-
-      scopeNames.forEach(scopeName => {
-        const currentScope = channel.objects[SCOPES[scopeName]]
+      ;(Object.keys(QObjectMap) as QObjectJSKeys[]).forEach(scopeName => {
+        const currentScope = channel.objects[QObjectMap[scopeName]]
         pushersMap[scopeName] = createPusher(currentScope)
         propsMap[scopeName] = createProp(currentScope)
         registerSignalListener(currentScope)
@@ -99,7 +96,7 @@ export default {
       // push `loaded` message to Qt side positively.
       // 2. This callback alway be called after router initialization
       pushersMap
-        .context({
+        .jsSideKey({
           action: 'jsSideMethodName',
           payload: ''
         })
