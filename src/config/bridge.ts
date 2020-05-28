@@ -29,10 +29,10 @@ export const SCOPES = {
 export type ScopeName = keyof typeof SCOPES
 
 // We use only one object to store all signal callbacks from different QObject.
-export const SIGNAL_CALLBACKS = {
-  signalMessageFromQt(val: any) {
-    // signal callback
+export const signalCallbacks = {
+  onSignalMessagesFromQtSide(val: object) {
+    // do something you like
   }
 }
 
-export type SignalName = keyof typeof SIGNAL_CALLBACKS
+export type SignalNames = keyof typeof signalCallbacks

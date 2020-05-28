@@ -1,8 +1,8 @@
 import {
   RECEIVER_MAP,
   PUSHER_MAP,
-  SignalName,
-  SIGNAL_CALLBACKS
+  signalCallbacks,
+  SignalNames
 } from '@/config/bridge'
 import { PublishedObject } from './qwebchannel'
 
@@ -101,15 +101,15 @@ export function createProp(QObject: PublishedObject) {
 export function registerSignalListener(currentScope: PublishedObject) {
   // We setup all available listeners for signals defined by Qt side
   // To be notice, signal also belongs to particular QObject
-  ;(Object.keys(SIGNAL_CALLBACKS) as SignalName[]).forEach(signalName => {
+  ;(Object.keys(signalCallbacks) as SignalNames[]).forEach(signalName => {
     const signal = currentScope[signalName] as SignalHandler
     // setup particular QObject signal listeners if signal defined
     if (
       signal &&
       typeof signal.connect === 'function' &&
-      typeof SIGNAL_CALLBACKS[signalName] === 'function'
+      typeof signalCallbacks[signalName] === 'function'
     ) {
-      return signal.connect(SIGNAL_CALLBACKS[signalName])
+      return signal.connect(signalCallbacks[signalName])
     }
   })
 }
