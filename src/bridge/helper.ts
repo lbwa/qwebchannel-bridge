@@ -2,8 +2,7 @@ import {
   dispatchersMap,
   signalCallbacks,
   SignalNames,
-  PusherJSKeys,
-  PusherMap
+  PusherJSKeys
 } from '@/config/bridge'
 import { PublishedObject } from './qwebchannel'
 
@@ -73,19 +72,19 @@ export function createPusher(QObject: PublishedObject) {
     payload: any
   }) {
     return new Promise((resolve, reject) => {
-      if (!Object.keys(QObject).includes(PusherMap[action]))
+      if (!Object.keys(QObject).includes(action))
         return reject(new Error('[PUSHER]: Unknown action name !'))
-      if (typeof QObject[PusherMap[action]] !== 'function') {
+      if (typeof QObject[action] !== 'function') {
         return reject(
           new Error(
-            typeof QObject[PusherMap[action]].connect === 'function'
+            typeof QObject[action].connect === 'function'
               ? `[PUSHER]: ${action} is a Qt signal, not a method`
               : `[PUSHER]: Missing function named ${action} in QObject !`
           )
         )
       }
 
-      QObject[PusherMap[action]](payload, resolve)
+      QObject[action](payload, resolve)
     })
   }
 }

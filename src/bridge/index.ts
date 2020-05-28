@@ -8,7 +8,7 @@ import {
   createProp,
   registerSignalListener
 } from './helper'
-import { QObjectMap, QObjectJSKeys } from '@/config/bridge'
+import { QObjectMap, QObjectJSKeys, PusherJSKeys } from '@/config/bridge'
 
 declare global {
   interface Window {
@@ -28,7 +28,7 @@ declare global {
 declare module 'vue/types/vue' {
   interface Vue {
     prototype: {
-      $$pushers: PushersMap
+      $$pushers: QtPushersMap
       $$props: QtPropsMap
     }
   }
@@ -36,7 +36,7 @@ declare module 'vue/types/vue' {
 
 // https://stackoverflow.com/questions/47181789/limit-object-properties-to-keyof-interface
 // https://www.typescriptlang.org/docs/handbook/advanced-types.html#mapped-types
-type PushersMap = {
+type QtPushersMap = {
   [name in QObjectJSKeys]: ReturnType<typeof createPusher>
 }
 
@@ -67,25 +67,25 @@ export default {
     new QWebChannel(window.qt.webChannelTransport, function(channel) {
       // NOTICE: all communication is under scope(QObject) mapping from Qt side
       // You can also create your own single or multiple scope(QObject) which is similar with following logic.
+      const pushersMap = {} as QtPushersMap
       const propsMap = {} as QtPropsMap
-      const pushersMap = {} as PushersMap
-      ;(Object.keys(QObjectMap) as QObjectJSKeys[]).forEach(scopeName => {
-        const currentScope = channel.objects[QObjectMap[scopeName]]
-        pushersMap[scopeName] = createPusher(currentScope)
-        propsMap[scopeName] = createProp(currentScope)
+      ;(Object.keys(QObjectMap) as QObjectJSKeys[]).forEach(QObjectJSKey => {
+        const currentScope = channel.objects[QObjectMap[QObjectJSKey]]
+        pushersMap[QObjectJSKey] = createPusher(currentScope)
+        propsMap[QObjectJSKey] = createProp(currentScope)
         registerSignalListener(currentScope)
       })
 
       /**
        * @usage
        * Call Cpp method in Vue instance:
-       * this.$$pusher.yourOwnScope({
-       *    action: 'METHOD_NAME_FROM_CPP',
-       *    payload: 'CALLING_PAYLOAD'
+       * this.$$pusher.QObjectJSKey({
+       *    action: 'JS_METHOD_NAME_MAPPING_QT_METHOD_NAME',
+       *    payload: 'REQUEST_PAYLOAD'
        * })
        *
        * get Cpp properties in Vue instance:
-       * this.$$prop.yourOwnScope.propFromCpp
+       * this.$$prop.QObjectJSKey.propNameSameAsQtSideProperty
        */
       Vue.prototype.$$pushers = pushersMap
       Vue.prototype.$$props = propsMap
@@ -97,8 +97,8 @@ export default {
       // 2. This callback alway be called after router initialization
       pushersMap
         .jsSideQObjectMappingKey({
-          action: 'jsSideMappingMethodName',
-          payload: ''
+          action: PusherJSKeys.jsSideMappingMethodName,
+          payload: 'PASS_PAYLOAD_TO_QT_SIDE'
         })
         .then(res => {
           dispatch(res as string)

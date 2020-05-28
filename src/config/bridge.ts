@@ -2,8 +2,6 @@ import router from '@/router'
 
 export type QObjectJSKeys = keyof typeof QObjectMap
 
-export type PusherJSKeys = keyof typeof PusherMap
-
 export type SignalNames = keyof typeof signalCallbacks
 
 // Map QObject name to JS side
@@ -15,7 +13,7 @@ export enum QObjectMap {
 // interface PUSHER_MAP {
 //   [jsSideName: string]: qtSideName
 // }
-export enum PusherMap {
+export enum PusherJSKeys {
   jsSideMappingMethodName = 'QT_SIDE_METHOD_NAME'
 }
 
