@@ -42,8 +42,6 @@ type QtPushersMap = {
 
 type QtPropsMap = Record<QObjectJSKeys, any>
 
-const __DEV__ = process.env.NODE_ENV === 'development'
-
 export default {
   install(Vue: Vue) {
     if (!__DEV__) {

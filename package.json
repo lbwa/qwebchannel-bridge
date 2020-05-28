@@ -48,6 +48,9 @@
     "rules": {},
     "parserOptions": {
       "parser": "@typescript-eslint/parser"
+    },
+    "globals": {
+      "__DEV__": "readonly"
     }
   },
   "postcss": {
