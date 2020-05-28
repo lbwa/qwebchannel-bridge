@@ -8,7 +8,7 @@ export type SignalNames = keyof typeof signalCallbacks
 
 // Map QObject name to JS side
 export enum QObjectMap {
-  jsSideKey = 'QT_SIDE_KEY'
+  jsSideQObjectMappingKey = 'QT_SIDE_QOBJECT_KEY'
 }
 
 // We use only one object to store all pusher mapping from different QObject.
@@ -16,10 +16,10 @@ export enum QObjectMap {
 //   [jsSideName: string]: qtSideName
 // }
 export enum PusherMap {
-  jsSideMethodName = 'QT_SIDE_METHOD_NAME'
+  jsSideMappingMethodName = 'QT_SIDE_METHOD_NAME'
 }
 
-export const RECEIVER_MAP: { [key: string]: (payload: any) => any } = {
+export const dispatchersMap: { [key: string]: (payload: any) => any } = {
   sampleActionFromCpp(payload: any) {
     router.replace({
       name: 'about',

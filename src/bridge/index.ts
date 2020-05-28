@@ -96,8 +96,8 @@ export default {
       // push `loaded` message to Qt side positively.
       // 2. This callback alway be called after router initialization
       pushersMap
-        .jsSideKey({
-          action: 'jsSideMethodName',
+        .jsSideQObjectMappingKey({
+          action: 'jsSideMappingMethodName',
           payload: ''
         })
         .then(res => {

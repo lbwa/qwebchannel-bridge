@@ -1,5 +1,5 @@
 import {
-  RECEIVER_MAP,
+  dispatchersMap,
   signalCallbacks,
   SignalNames,
   PusherJSKeys,
@@ -12,34 +12,34 @@ interface DispatchPayload {
   [otherKey: string]: any
 }
 
-interface SignalHandler {
+interface SignalListener {
   connect: Function
   disconnect: Function
 }
 
-type BridgeNavigator = () => unknown
+type BridgeDispatch = () => unknown
 
 export type Pusher = ReturnType<typeof createPusher>
 
 let isRouterLoaded = false
-const navigatorQueue: BridgeNavigator[] = []
+const dispatcherQueue: BridgeDispatch[] = []
 
 export function switchRouterLoaded() {
   if (isRouterLoaded) return
 
   isRouterLoaded = true
-  if (navigatorQueue.length) {
-    navigatorQueue.forEach(navigator => navigator())
-    navigatorQueue.length = 0
+  if (dispatcherQueue.length) {
+    dispatcherQueue.forEach(dispatch => dispatch())
+    dispatcherQueue.length = 0
   }
 }
 
-export function queueNavigator(navigator: BridgeNavigator): void {
+export function queueDispatch(dispatch: BridgeDispatch): void {
   if (isRouterLoaded) {
-    navigator()
+    dispatch()
     return
   }
-  navigatorQueue.push(navigator)
+  dispatcherQueue.push(dispatch)
 }
 
 export function dispatch(payload: string) {
@@ -54,12 +54,12 @@ export function dispatch(payload: string) {
    * function will always be invoked.
    */
   if (/.+\/#\/$/.test(location.href)) {
-    const navigator = RECEIVER_MAP[type]
-    if (navigator) {
-      queueNavigator(() => navigator(otherPayload))
+    const dispatch = dispatchersMap[type]
+    if (dispatch) {
+      queueDispatch(() => dispatch(otherPayload))
     } else {
       // eslint-disable-next-line no-console
-      console.error(`[Receiver]: Unregister navigator type -> ${type}`)
+      console.error(`[Receiver]: Unregister dispatch type -> ${type}`)
     }
   }
 }
@@ -103,7 +103,7 @@ export function registerSignalListener(currentScope: PublishedObject) {
   // We setup all available listeners for signals defined by Qt side
   // To be notice, signal also belongs to particular QObject
   ;(Object.keys(signalCallbacks) as SignalNames[]).forEach(signalName => {
-    const signal = currentScope[signalName] as SignalHandler
+    const signal = currentScope[signalName] as SignalListener
     // setup particular QObject signal listeners if signal defined
     if (
       signal &&

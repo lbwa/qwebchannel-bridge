@@ -70,7 +70,7 @@ Once `QWebChannel` initialized, `dispatch` will be invoked when `Cpp` function n
      }
      ```
 
-   `type` property will be used to invoke `receiver` in the [RECEIVER_MAP](./src/config/bridge.ts#L3), then `payload` property including any messages from `Qt` side will passed `receiver`. `receiver` in the [RECEIVER_MAP](./src/config/bridge.ts#L3) plays a `navigator` role in front-end, and developer should add navigation logic into here. This is all secrets about front-end navigation without `Qt` routing.
+   `type` property will be used to invoke `receiver` in the [dispatchersMap](./src/config/bridge.ts#L3), then `payload` property including any messages from `Qt` side will passed `receiver`. `receiver` in the [dispatchersMap](./src/config/bridge.ts#L3) plays a `navigator` role in front-end, and developer should add navigation logic into here. This is all secrets about front-end navigation without `Qt` routing.
 
    Above all process has described how to initialize `Vue.js` app in the `QWebEngine`, and how navigation works in the `Vue.js` with `QWebEngine`.
 
