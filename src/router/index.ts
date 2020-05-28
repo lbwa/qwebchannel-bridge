@@ -1,10 +1,11 @@
 import Vue from 'vue'
 import Router from 'vue-router'
 import Home from '@/views/Home.vue'
+import { afterEach } from './guards'
 
 Vue.use(Router)
 
-export default new Router({
+const router = new Router({
   routes: [
     {
       path: '/',
@@ -22,3 +23,7 @@ export default new Router({
     }
   ]
 })
+
+afterEach.forEach(hook => router.afterEach(hook))
+
+export default router

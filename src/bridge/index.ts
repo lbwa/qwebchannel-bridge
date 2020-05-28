@@ -8,12 +8,7 @@ import {
   createProp,
   registerSignalListener
 } from './helper'
-import {
-  SCOPES,
-  ScopeName,
-  SIGNAL_CALLBACKS,
-  SignalName
-} from '@/config/bridge'
+import { SCOPES, ScopeName } from '@/config/bridge'
 
 declare global {
   interface Window {

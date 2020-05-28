@@ -16,6 +16,31 @@ interface SignalHandler {
   disconnect: Function
 }
 
+type BridgeNavigator = () => unknown
+
+let isRouterLoaded = false
+const navigatorQueue: BridgeNavigator[] = []
+
+export type Pusher = ReturnType<typeof createPusher>
+
+export function switchRouterLoaded() {
+  if (isRouterLoaded) return
+
+  isRouterLoaded = true
+  if (navigatorQueue.length) {
+    navigatorQueue.forEach(navigator => navigator())
+    navigatorQueue.length = 0
+  }
+}
+
+export function queueNavigator(navigator: BridgeNavigator): void {
+  if (isRouterLoaded) {
+    navigator()
+    return
+  }
+  navigatorQueue.push(navigator)
+}
+
 export function dispatch(payload: string) {
   const { type, ...otherPayload }: DispatchPayload = JSON.parse(payload)
 
@@ -28,7 +53,13 @@ export function dispatch(payload: string) {
    * function will always be invoked.
    */
   if (/.+\/#\/$/.test(location.href)) {
-    RECEIVER_MAP[type] && RECEIVER_MAP[type](otherPayload)
+    const navigator = RECEIVER_MAP[type]
+    if (navigator) {
+      queueNavigator(() => navigator(otherPayload))
+    } else {
+      // eslint-disable-next-line no-console
+      console.error(`[Receiver]: Unregister navigator type -> ${type}`)
+    }
   }
 }
 
