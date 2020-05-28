@@ -1,8 +1,9 @@
 import {
   RECEIVER_MAP,
-  PUSHER_MAP,
   signalCallbacks,
-  SignalNames
+  SignalNames,
+  PusherJSKeys,
+  PusherMap
 } from '@/config/bridge'
 import { PublishedObject } from './qwebchannel'
 
@@ -18,10 +19,10 @@ interface SignalHandler {
 
 type BridgeNavigator = () => unknown
 
+export type Pusher = ReturnType<typeof createPusher>
+
 let isRouterLoaded = false
 const navigatorQueue: BridgeNavigator[] = []
-
-export type Pusher = ReturnType<typeof createPusher>
 
 export function switchRouterLoaded() {
   if (isRouterLoaded) return
@@ -68,23 +69,23 @@ export function createPusher(QObject: PublishedObject) {
     action,
     payload = ''
   }: {
-    action: keyof typeof PUSHER_MAP
+    action: PusherJSKeys
     payload: any
   }) {
     return new Promise((resolve, reject) => {
-      if (!Object.keys(QObject).includes(PUSHER_MAP[action]))
+      if (!Object.keys(QObject).includes(PusherMap[action]))
         return reject(new Error('[PUSHER]: Unknown action name !'))
-      if (typeof QObject[PUSHER_MAP[action]] !== 'function') {
+      if (typeof QObject[PusherMap[action]] !== 'function') {
         return reject(
           new Error(
-            typeof QObject[PUSHER_MAP[action]].connect === 'function'
+            typeof QObject[PusherMap[action]].connect === 'function'
               ? `[PUSHER]: ${action} is a Qt signal, not a method`
               : `[PUSHER]: Missing function named ${action} in QObject !`
           )
         )
       }
 
-      QObject[PUSHER_MAP[action]](payload, resolve)
+      QObject[PusherMap[action]](payload, resolve)
     })
   }
 }

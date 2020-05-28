@@ -100,7 +100,7 @@ export default {
       // 2. This callback alway be called after router initialization
       pushersMap
         .context({
-          action: 'initialized',
+          action: 'jsSideMethodName',
           payload: ''
         })
         .then(res => {
